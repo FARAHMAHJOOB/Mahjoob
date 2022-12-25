@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Travel;
 use App\Models\TravelSpot;
-use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\TravelSpotStoreRequest;
 use App\Exceptions\SpotAlreadyPassedException;
 
@@ -18,21 +17,26 @@ class TravelSpotController extends Controller
             throw new SpotAlreadyPassedException;
         }
 
-        $result = $spot->update([
-            'arrived_at' => now(),
-        ]);
-        apiResponse($result);
+        try {
+            $spot->update(['arrived_at' => now()]);
+            return apiResponseSuccess();
+        } catch (\Throwable $th) {
+            return apiResponseError($th->getMessage());
+        }
     }
 
     public function store(Travel $travel, TravelSpotStoreRequest $request)
     {
         $this->authorize('create', $travel);
 
-        $spotRequest = $request->validated();
-        $spotRequest['travel_id'] = $travel->id;
-
-        $newSpot = TravelSpot::create($spotRequest);
-        apiResponse($newSpot);
+        try {
+            $spotRequest = $request->validated();
+            $spotRequest['travel_id'] = $travel->id;
+            $newSpot = TravelSpot::create($spotRequest);
+            return apiResponseSuccess();
+        } catch (\Throwable $th) {
+            return apiResponseError($th->getMessage());
+        }
     }
 
     public function destroy(Travel $travel, TravelSpot $spot)
@@ -40,8 +44,12 @@ class TravelSpotController extends Controller
 
         $this->authorize('destroy', $spot);
 
-        $result = $spot->delete();
-        apiResponse($result);
+        try {
+            $result = $spot->delete();
+            return apiResponseSuccess();
+        } catch (\Throwable $th) {
+            return apiResponseError($th->getMessage());
+        }
     }
 
 

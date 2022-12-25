@@ -10,10 +10,15 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
 
-        $request = $request->validated();
-        $request['password'] =  bcrypt($request['password']);
-        $user = User::create($request);
-        return response()->json([$user]);
+        try {
+            $request = $request->validated();
+            $request['password'] =  bcrypt($request['password']);
+            $user = User::create($request);
+            return response()->json([$user]);
+            
+        } catch (\Throwable $th) {
+            return apiResponseError($th->getMessage());
+        }
     }
 
     public function user()
